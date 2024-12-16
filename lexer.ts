@@ -4,6 +4,8 @@
 // @new name! "josh"
  > ["@new", "name", "//", "josh"]*/
 
+import * as fs from 'fs';
+
 export enum tokenTypes {
     keyword,
     identifier,
@@ -58,6 +60,9 @@ export function tokenOf(val: string = "", type: tokenTypes, subtype: staticTypes
 export function isAlpha(src: string):boolean {
     return src.toLowerCase() !== src.toUpperCase();
 }
+export function canSkip(src: string):boolean {
+    return src === "\n" || src === "\t" || src === " ";
+}
 
 export function tokenize(sourceCode: string): Array<token> {
     let tokens = new Array<token>();
@@ -108,9 +113,13 @@ export function tokenize(sourceCode: string): Array<token> {
                         identifier += src.shift();
                     }
                     tokens.push(tokenOf(identifier, tokenTypes.identifier));
-                } else{
+                } else if(canSkip(src[0])){
                     src.shift();
+                }else{
+                    console.log("Unrecognised Char")
                 }
+
+
                 break;
 
         }
@@ -118,5 +127,10 @@ export function tokenize(sourceCode: string): Array<token> {
 
     return tokens;
 }
+
+const sourcecode:string = fs.readFileSync("./test.io", "utf-8");
+const lexedArr:any[] = tokenize(sourcecode);
+
+console.log(lexedArr);
 
 

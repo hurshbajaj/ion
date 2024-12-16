@@ -4,8 +4,28 @@
 // @new ageExact$ 12.7
 // @new name! "josh"
  > ["@new", "name", "//", "josh"]*/
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.tokenize = exports.isAlpha = exports.tokenOf = exports.staticTypes = exports.tokenTypes = void 0;
+exports.tokenize = exports.canSkip = exports.isAlpha = exports.tokenOf = exports.staticTypes = exports.tokenTypes = void 0;
+var fs = __importStar(require("fs"));
 var tokenTypes;
 (function (tokenTypes) {
     tokenTypes[tokenTypes["keyword"] = 0] = "keyword";
@@ -35,7 +55,7 @@ var assignTypes = {
     "#": staticTypes.num,
     "$": staticTypes.deci,
     "?": staticTypes.bool,
-    "!": staticTypes.num,
+    "!": staticTypes.str,
 };
 var binOps = {
     "+": staticTypes.addPlus,
@@ -56,6 +76,10 @@ function isAlpha(src) {
     return src.toLowerCase() !== src.toUpperCase();
 }
 exports.isAlpha = isAlpha;
+function canSkip(src) {
+    return src === "\n" || src === "\t" || src === " ";
+}
+exports.canSkip = canSkip;
 function tokenize(sourceCode) {
     var tokens = new Array();
     var src = sourceCode.split("");
@@ -108,8 +132,11 @@ function tokenize(sourceCode) {
                     }
                     tokens.push(tokenOf(identifier, tokenTypes.identifier));
                 }
-                else {
+                else if (canSkip(src[0])) {
                     src.shift();
+                }
+                else {
+                    console.log("Unrecognised Char");
                 }
                 break;
         }
@@ -117,3 +144,6 @@ function tokenize(sourceCode) {
     return tokens;
 }
 exports.tokenize = tokenize;
+var sourcecode = fs.readFileSync("./test.io", "utf-8");
+var lexedArr = tokenize(sourcecode);
+console.log(lexedArr);
