@@ -40,6 +40,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.staticTypes = exports.tokenTypes = void 0;
 exports.tokenOf = tokenOf;
+exports.isNum = isNum;
 exports.isAlpha = isAlpha;
 exports.canSkip = canSkip;
 exports.tokenize = tokenize;
@@ -89,11 +90,20 @@ function tokenOf(val, type, subtype) {
     if (subtype === void 0) { subtype = null; }
     return { val: val, type: type, subtype: subtype };
 }
+function isNum(num) {
+    try {
+        var hold = parseFloat(num);
+        return true;
+    }
+    catch (e) {
+        return false;
+    }
+}
 function isAlpha(src) {
     return src.toLowerCase() !== src.toUpperCase();
 }
 function canSkip(src) {
-    return src === "\n" || src === "\t" || src === " ";
+    return src === "\n" || src === "\t" || src === ' ';
 }
 function tokenize(sourceCode) {
     var tokens = new Array();
@@ -110,33 +120,36 @@ function tokenize(sourceCode) {
             case "-":
             case "*":
             case "/":
-                tokens.push(tokenOf(src.shift(), tokenTypes.binOp, binOps[src[0]]));
+                var holdOp = src.shift();
+                tokens.push(tokenOf(holdOp, tokenTypes.binOp, binOps[holdOp]));
                 break;
             case "#":
             case "$":
             case "?":
             case "!":
-                tokens.push(tokenOf(src.shift(), tokenTypes.assignType, assignTypes[src[0]]));
+                var hold = src.shift();
+                tokens.push(tokenOf(hold, tokenTypes.assignType, assignTypes[hold]));
                 break;
             default:
+                if (canSkip(src[0])) {
+                    src.shift();
+                }
                 // @ts-ignore
-                if (!isNaN(src[0])) {
+                else if (!isNaN(src[0])) {
                     var number = "";
                     //@ts-ignore
-                    while (!isNaN(src[0])) {
+                    while (!isNaN(src[0] && src[0])) {
                         number += src.shift();
                     }
                     tokens.push(tokenOf(number, tokenTypes.number));
                 }
-                else if (src[0] === "@") {
+                else if (src[0] === "@") { //keywords
                     var keyword = src.shift();
                     // @ts-ignore
                     while (isNaN(src[0]) && src[0] !== " " && isAlpha(src[0])) {
                         // @ts-ignore
                         keyword += src.shift();
                     }
-                    /*The way keywords record works is that, for e.g. , you may write @new,
-                      it will be lexed/interpreted as init subtype. */
                     // @ts-ignore
                     tokens.push(tokenOf(keyword, tokenTypes.keyword, keywords[keyword]));
                 }
@@ -146,12 +159,10 @@ function tokenize(sourceCode) {
                         identifier += src.shift();
                     }
                     tokens.push(tokenOf(identifier, tokenTypes.identifier));
-                }
-                else if (canSkip(src[0])) {
-                    src.shift();
-                }
-                else {
+                } //identifiers
+                else { //error
                     console.log("Unrecognised Char");
+                    src.shift();
                 }
                 break;
         }
