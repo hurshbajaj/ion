@@ -106,7 +106,7 @@ export function tokenize(sourceCode: string): Array<token> {
                 else if(!isNaN(src[0])){
                     let number = "";
                     //@ts-ignore
-                    while (!isNaN(src[0] && src[0])){
+                    while (!isNaN(src[0])){
                         number += src.shift();
                     }
                     tokens.push(tokenOf(number, tokenTypes.number));

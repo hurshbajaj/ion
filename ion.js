@@ -138,7 +138,7 @@ function tokenize(sourceCode) {
                 else if (!isNaN(src[0])) {
                     var number = "";
                     //@ts-ignore
-                    while (!isNaN(src[0] && src[0])) {
+                    while (!isNaN(src[0])) {
                         number += src.shift();
                     }
                     tokens.push(tokenOf(number, tokenTypes.number));
