@@ -59,6 +59,10 @@ export function tokenOf(val: string = "", type: tokenTypes, subtype: staticTypes
 export function isNum(num: any):boolean{
     try{
         let hold = parseFloat(num);
+        if(isNaN(hold)){
+            return false;
+        }
+        console.log(hold);
         return true
     }catch(e){
         return false;
@@ -103,10 +107,10 @@ export function tokenize(sourceCode: string): Array<token> {
                 }
 
                 // @ts-ignore
-                else if(!isNaN(src[0])){
+                else if(isNum(src[0])){
                     let number = "";
                     //@ts-ignore
-                    while (!isNaN(src[0])){
+                    while (isNum(src[0])){
                         number += src.shift();
                     }
                     tokens.push(tokenOf(number, tokenTypes.number));

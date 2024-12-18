@@ -93,6 +93,10 @@ function tokenOf(val, type, subtype) {
 function isNum(num) {
     try {
         var hold = parseFloat(num);
+        if (isNaN(hold)) {
+            return false;
+        }
+        console.log(hold);
         return true;
     }
     catch (e) {
@@ -135,10 +139,10 @@ function tokenize(sourceCode) {
                     src.shift();
                 }
                 // @ts-ignore
-                else if (!isNaN(src[0])) {
+                else if (isNum(src[0])) {
                     var number = "";
                     //@ts-ignore
-                    while (!isNaN(src[0])) {
+                    while (isNum(src[0])) {
                         number += src.shift();
                     }
                     tokens.push(tokenOf(number, tokenTypes.number));
