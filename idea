@@ -1,0 +1,42 @@
+$numberVariable (integer): 12
+$numberVarTwo (integer): 4
+$mesg (string): "hello"
+$myBoolean (boolean): 1 // true
+
+dspl<mesg>
+$sum (integer): numberVar + numberVarTwo
+
+dspl<sum>
+
+$functionOne (function): <> : {
+
+}
+
+$newObjectVar (object): {}
+
+$newConstructor (construct): {
+
+%onInit: {}   // %onInit (native): {} // %onInit: <> :{}
+%onDelete: {}
+%onCall: {}
+
+%newVarInConstruct (integer): 112
+
+%newVarStatic (integer) (static): 172635
+
+%newClassFunc (function): <> : {}
+}
+
+//const vars
+
+$newConst (string) (const): "This is a constant variable"
+
+//comments
+
+!!this is a comment
+
+//null/undefined/NaN
+nein
+
+for eg. ,
+$myNull (string): Nein
