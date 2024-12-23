@@ -17,25 +17,39 @@ var tokenType;
     tokenType[tokenType["closeParen"] = 7] = "closeParen";
     tokenType[tokenType["number"] = 8] = "number";
 })(tokenType || (tokenType = {}));
+var subtypeVals;
+(function (subtypeVals) {
+    subtypeVals[subtypeVals["sum"] = 0] = "sum";
+    subtypeVals[subtypeVals["differance"] = 1] = "differance";
+    subtypeVals[subtypeVals["mult"] = 2] = "mult";
+    subtypeVals[subtypeVals["div"] = 3] = "div";
+    subtypeVals[subtypeVals["variableTYPE"] = 4] = "variableTYPE";
+    subtypeVals[subtypeVals["variableSTATE"] = 5] = "variableSTATE";
+})(subtypeVals || (subtypeVals = {}));
+var binOp = {
+    "+": "sum",
+    "-": "differance",
+    "*": "mult",
+    "/": "div"
+};
 var keywordsRecord = {
     "$": "init",
     "%": "sub-init"
 };
-//variable flag types~~
-var varflagsVARTYPE;
-(function (varflagsVARTYPE) {
-    varflagsVARTYPE[varflagsVARTYPE["(integer)"] = 0] = "(integer)";
-    varflagsVARTYPE[varflagsVARTYPE["(string)"] = 1] = "(string)";
-    varflagsVARTYPE[varflagsVARTYPE["(boolean)"] = 2] = "(boolean)";
-    varflagsVARTYPE[varflagsVARTYPE["(decimal)"] = 3] = "(decimal)";
-    varflagsVARTYPE[varflagsVARTYPE["(function)"] = 4] = "(function)";
-    varflagsVARTYPE[varflagsVARTYPE["(construct)"] = 5] = "(construct)";
-})(varflagsVARTYPE || (varflagsVARTYPE = {})); //varflagsVARTYPE
-var varflagsMISC;
-(function (varflagsMISC) {
-    varflagsMISC[varflagsMISC["const"] = 0] = "const";
-    varflagsMISC[varflagsMISC["static"] = 1] = "static";
-})(varflagsMISC || (varflagsMISC = {}));
+var flagsVARTYPE;
+(function (flagsVARTYPE) {
+    flagsVARTYPE[flagsVARTYPE["(integer)"] = 0] = "(integer)";
+    flagsVARTYPE[flagsVARTYPE["(string)"] = 1] = "(string)";
+    flagsVARTYPE[flagsVARTYPE["(boolean)"] = 2] = "(boolean)";
+    flagsVARTYPE[flagsVARTYPE["(decimal)"] = 3] = "(decimal)";
+    flagsVARTYPE[flagsVARTYPE["(function)"] = 4] = "(function)";
+    flagsVARTYPE[flagsVARTYPE["(construct)"] = 5] = "(construct)";
+})(flagsVARTYPE || (flagsVARTYPE = {}));
+var flagsVARSTATE;
+(function (flagsVARSTATE) {
+    flagsVARSTATE[flagsVARSTATE["(const)"] = 0] = "(const)";
+    flagsVARSTATE[flagsVARSTATE["(static)"] = 1] = "(static)";
+})(flagsVARSTATE || (flagsVARSTATE = {}));
 function isAlpha(src) {
     return src.toLowerCase() !== src.toUpperCase();
 }
@@ -43,8 +57,9 @@ function isNum(src) {
     var holder = Number(src);
     return !isNaN(holder);
 }
-function tokenize(val, type) {
-    return { val: val, type: type };
+function tokenize(val, type, subtype) {
+    if (subtype === void 0) { subtype = null; }
+    return { val: val, type: type, subtype: subtype };
 }
 function lexer(srcCode) {
     var lexedArr = new Array();
@@ -58,7 +73,15 @@ function lexer(srcCode) {
                     while (src[0] !== ")") {
                         flag += src.shift();
                     }
-                    lexedArr.push(tokenize(flag, tokenType.variableFlag));
+                    var subtype = null;
+                    if (Object.keys(flagsVARTYPE).includes(flag)) {
+                        subtype = subtypeVals.variableTYPE;
+                    }
+                    else if (Object.keys(flagsVARSTATE).includes(flag)) {
+                        subtype = subtypeVals.variableSTATE;
+                    }
+                    // @ts-ignore
+                    lexedArr.push(tokenize(flag, tokenType.variableFlag, subtype));
                 }
                 else {
                     lexedArr.push(tokenize(src.shift(), tokenType.openParen));
@@ -66,6 +89,22 @@ function lexer(srcCode) {
                 break;
             case ")":
                 lexedArr.push(tokenize(src.shift(), tokenType.closeParen));
+                break;
+            case ":":
+                lexedArr.push(tokenize(src.shift(), tokenType.assignToken));
+                break;
+            //case for <> argument
+            default:
+                if (Object.keys(binOp).includes(src[0])) {
+                    var hold = src.shift();
+                    // @ts-ignore
+                    lexedArr.push(tokenize(hold, tokenType.binOp, binOp[hold]));
+                }
+                //is skippable
+                //is keyword
+                //is alpha
+                //is number
+                //error
                 break;
         }
     }

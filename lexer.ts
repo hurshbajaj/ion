@@ -146,6 +146,7 @@ import * as fs from "fs";
 interface token{
     val: string;
     type: tokenType;
+    subtype: subtypeVals | null;
 }
 enum tokenType{
     keyword, //sub
@@ -161,23 +162,40 @@ enum tokenType{
     number,
 }
 
+enum subtypeVals{
+    "sum",
+    "differance",
+    "mult",
+    "div",
+
+    "variableTYPE", //var type flags
+
+    "variableSTATE", //const, static
+}
+
+const binOp:Record<string, string> = {
+    "+":"sum",
+    "-":"differance",
+    "*":"mult",
+    "/":"div"
+}
+
 const keywordsRecord:Record<string, string> = {
     "$":"init",
     "%":"sub-init"
 }
-//variable flag types~~
-enum varflagsVARTYPE{
+enum flagsVARTYPE{
     "(integer)",
     "(string)",
     "(boolean)",
     "(decimal)",
     "(function)",
-    "(construct)",
-} //varflagsVARTYPE
+    "(construct)"
+}
 
-enum varflagsMISC{
-    "const",
-    "static"
+enum flagsVARSTATE {
+    "(const)",
+    "(static)"
 }
 
 function isAlpha(src:string):boolean{
@@ -188,8 +206,8 @@ function isNum(src:any):boolean{
     return !isNaN(holder);
 }
 
-function tokenize(val:any, type:tokenType):token{
-    return {val, type}
+function tokenize(val:any, type:tokenType, subtype:subtypeVals | null = null):token{
+    return {val, type, subtype}
 }
 
 function lexer(srcCode:string):token[]{
@@ -204,7 +222,16 @@ function lexer(srcCode:string):token[]{
                     while(src[0] !== ")") {
                         flag += src.shift()
                     }
-                    lexedArr.push(tokenize(flag, tokenType.variableFlag))
+                    let subtype = null;
+
+                    if(Object.keys(flagsVARTYPE).includes(flag)){
+                        subtype = subtypeVals.variableTYPE;
+                    }else if(Object.keys(flagsVARSTATE).includes(flag)){
+                        subtype = subtypeVals.variableSTATE;
+                    }
+
+                    // @ts-ignore
+                    lexedArr.push(tokenize(flag, tokenType.variableFlag, subtype));
                 }else{
 
                     lexedArr.push(tokenize(src.shift(), tokenType.openParen))
@@ -213,6 +240,24 @@ function lexer(srcCode:string):token[]{
 
             case ")":
                 lexedArr.push(tokenize(src.shift(), tokenType.closeParen))
+                break;
+
+            case ":":
+                lexedArr.push(tokenize(src.shift(), tokenType.assignToken))
+                break;
+            //case for <> argument
+            default:
+                if(Object.keys(binOp).includes(src[0])){
+                    const hold = src.shift();
+                    // @ts-ignore
+                    lexedArr.push(tokenize(hold, tokenType.binOp, binOp[hold]))
+                }
+                //is skippable
+                //is keyword
+                //is alpha
+                //is number
+                //error
+
                 break;
         }
     }
