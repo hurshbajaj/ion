@@ -184,6 +184,8 @@ const keywordsRecord:Record<string, string> = {
     "$":"init",
     "%":"sub-init"
 }
+
+//just for refs
 enum flagsVARTYPE{
     "(integer)",
     "(string)",
@@ -204,6 +206,9 @@ function isAlpha(src:string):boolean{
 function isNum(src:any):boolean{
     const holder = Number(src);
     return !isNaN(holder);
+}
+function canSkip(src:string):boolean{
+    return src === "\n" || src === " " || src === "\t" || src === "\r";
 }
 
 function tokenize(val:any, type:tokenType, subtype:subtypeVals | null = null):token{
@@ -245,7 +250,9 @@ function lexer(srcCode:string):token[]{
             case ":":
                 lexedArr.push(tokenize(src.shift(), tokenType.assignToken))
                 break;
+
             //case for <> argument
+
             default:
                 if(Object.keys(binOp).includes(src[0])){
                     const hold = src.shift();
@@ -253,10 +260,20 @@ function lexer(srcCode:string):token[]{
                     lexedArr.push(tokenize(hold, tokenType.binOp, binOp[hold]))
                 }
                 //is skippable
+                else if(canSkip(src[0])) {
+                    src.shift()
+                }
                 //is keyword
+                else if(Object.keys(keywordsRecord).includes(src[0])){
+                    // @ts-ignore
+                    lexedArr.push(tokenize(src[0], tokenType.keyword, keywordsRecord[src.shift()]))
+                }
                 //is alpha
                 //is number
                 //error
+                else{
+                    console.error("SOMEBODY MESSED UP AND IT WASN'T ME. THIS IS WHY YOU'RE A 13YR OLD FAILURE WHO LEGIT GOT NO LIFE NO SHIT AND WASTES HIS DAY ON MEANINGLESS SHIT LIKE THIS YOU *******")
+                }
 
                 break;
         }

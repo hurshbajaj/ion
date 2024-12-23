@@ -36,6 +36,7 @@ var keywordsRecord = {
     "$": "init",
     "%": "sub-init"
 };
+//just for refs
 var flagsVARTYPE;
 (function (flagsVARTYPE) {
     flagsVARTYPE[flagsVARTYPE["(integer)"] = 0] = "(integer)";
@@ -56,6 +57,9 @@ function isAlpha(src) {
 function isNum(src) {
     var holder = Number(src);
     return !isNaN(holder);
+}
+function canSkip(src) {
+    return src === "\n" || src === " " || src === "\t" || src === "\r";
 }
 function tokenize(val, type, subtype) {
     if (subtype === void 0) { subtype = null; }
@@ -101,10 +105,20 @@ function lexer(srcCode) {
                     lexedArr.push(tokenize(hold, tokenType.binOp, binOp[hold]));
                 }
                 //is skippable
+                else if (canSkip(src[0])) {
+                    src.shift();
+                }
                 //is keyword
+                else if (Object.keys(keywordsRecord).includes(src[0])) {
+                    // @ts-ignore
+                    lexedArr.push(tokenize(src[0], tokenType.keyword, keywordsRecord[src.shift()]));
+                }
                 //is alpha
                 //is number
                 //error
+                else {
+                    console.error("SOMEBODY MESSED UP AND IT WASN'T ME. THIS IS WHY YOU'RE A 13YR OLD FAILURE WHO LEGIT GOT NO LIFE NO SHIT AND WASTES HIS DAY ON MEANINGLESS SHIT LIKE THIS YOU *******");
+                }
                 break;
         }
     }
